@@ -54,14 +54,16 @@ app.get('/editor', authenticateToken, (req, res) => {
 
 app.post('/new-document', authenticateToken, (req, res) => {
     console.log('New document')
-    con.query(`INSERT INTO document (user, title, content) VALUES ('${req.body.username}', '${req.body.title}', '${req.body.content}')`, (err, result) => {
+    con.query(`INSERT INTO document (user, title, content) VALUES ('${req.username}', '${req.body.title}', '${req.body.content}')`, (err, result) => {
         if (err) throw err
         console.log('record inserted')
     })
 })
 
 app.get('/documents', authenticateToken, (req, res) => {
-    con.query('SELECT * FROM document ORDER BY ModificationDate DESC', (err, result, fields) => {
+    console.log('Quering documents, this is user: ', req.username)
+    con.query(`SELECT * FROM document WHERE user = '${req.username}' ORDER BY ModificationDate DESC`, (err, result, fields) => {
+        console.log('result ', result)
         res.send(result)
     })
 })
@@ -79,12 +81,10 @@ app.put('/documents', authenticateToken, (req, res) => {
 app.get('/documents/:id', authenticateToken, (req, res) => {
     console.log('inside doc get for id', req.params.id)
     con.query(`SELECT * FROM document WHERE documentID = '${req.params.id}'`, (err, result, fields) => {
-        console.log('resul ', result)
+        console.log('result ', result)
         res.send(result)
     })
 })
-
-
 
 app.listen(3001, () => {
     console.log('listening on port 3001')
