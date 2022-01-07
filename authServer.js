@@ -6,11 +6,13 @@ const app = express()
 const cors = require('cors')
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
+const cookieParser = require("cookie-parser")
 
 
 app.use(express.json());
 app.use(cors())
 app.use(express.urlencoded({ extended: true}))
+app.use(cookieParser())
 
 //Connect to db
 
@@ -29,21 +31,21 @@ con.connect(err => {
 
 // Authentication
 
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers["authorization"]
-    const token = authHeader && authHeader.split(" ")[1]
-    console.log('Authorizing in authtoken call, ', token)
+// const authenticateToken = (req, res, next) => {
+//     const authHeader = req.headers["authorization"]
+//     const token = authHeader && authHeader.split(" ")[1]
+//     console.log('Authorizing in authtoken call, ', token)
 
-    if(token == null) return res.sendStatus(401)
+//     if(token == null) return res.sendStatus(401)
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        console.log('verifying token')
-        if (err) return res.sendStatus(403)
-        req.username = user
-        console.log('user success: ', user)
-        next()
-    })
-}
+//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+//         console.log('verifying token')
+//         if (err) return res.sendStatus(403)
+//         req.username = user
+//         console.log('user success: ', user)
+//         next()
+//     })
+// }
 
 app.post('/login', (req, res) => {
     const username = req.body.username
@@ -64,6 +66,7 @@ app.post('/login', (req, res) => {
             if(result == true) {
                 const accessToken = jwt.sign(userFromDB.username, process.env.ACCESS_TOKEN_SECRET)
                 // const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
+                // res.cookie('token', accessToken, {httpOnly: true})
                 res.json({ accessToken: accessToken })
             } else {
                 res.sendStatus(403)
@@ -86,6 +89,7 @@ app.post('/create-user', (req, res) => {
         con.query(`INSERT INTO user VALUES ('${username}', '${hash}')`, (err, result) => {
             console.log('results from new user creation', result)
             const accessToken = jwt.sign(result[0].username, process.env.ACCESS_TOKEN_SECRET)
+            // res.cookie('token', accessToken, {httpOnly: true})
             res.json({ accessToken: accessToken })
         })
     })
