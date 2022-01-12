@@ -64,10 +64,11 @@ app.post('/login', (req, res) => {
             console.log('userfromdb, ', userFromDB)
 
             if(result == true) {
-                const accessToken = jwt.sign(userFromDB.username, process.env.ACCESS_TOKEN_SECRET)
+                const accessToken = jwt.sign({ user: userFromDB.username }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h"})
+                const refreshToken = jwt.sign({ user: userFromDB.username }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "4h"})
                 // const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
                 // res.cookie('token', accessToken, {httpOnly: true})
-                res.json({ accessToken: accessToken })
+                res.json({ accessToken: accessToken, refreshToken: refreshToken })
             } else {
                 res.sendStatus(403)
             }
@@ -76,8 +77,18 @@ app.post('/login', (req, res) => {
             console.log('error', err)
         })
     })
+})
 
-    
+app.post('/refresh', (req, res) => {
+    const token = req.body.token
+    //not sure if user.username is valid here
+    console.log('refresh: ', token)
+    jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403)
+        console.log('user: ', user)
+        const accessToken = jwt.sign({user: user.user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h"})
+        res.json({ accessToken: accessToken })
+    })
 })
 
 app.post('/create-user', (req, res) => {
