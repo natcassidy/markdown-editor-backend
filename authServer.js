@@ -64,11 +64,12 @@ app.post('/login', (req, res) => {
             console.log('userfromdb, ', userFromDB)
 
             if(result == true) {
-                const accessToken = jwt.sign({ user: userFromDB.username }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h"})
+                const tokenExpireTime = '15m'
+                const accessToken = jwt.sign({ user: userFromDB.username }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: tokenExpireTime})
                 const refreshToken = jwt.sign({ user: userFromDB.username }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "4h"})
                 // const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
                 // res.cookie('token', accessToken, {httpOnly: true})
-                res.json({ accessToken: accessToken, refreshToken: refreshToken })
+                res.json({ accessToken: accessToken, refreshToken: refreshToken, expireTime: tokenExpireTime})
             } else {
                 res.sendStatus(403)
             }
@@ -81,13 +82,14 @@ app.post('/login', (req, res) => {
 
 app.post('/refresh', (req, res) => {
     const token = req.body.token
+    const tokenExpireTime = '15m'
     //not sure if user.username is valid here
     console.log('refresh: ', token)
     jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
         if (err) return res.sendStatus(403)
         console.log('user: ', user)
-        const accessToken = jwt.sign({user: user.user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h"})
-        res.json({ accessToken: accessToken })
+        const accessToken = jwt.sign({user: user.user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: tokenExpireTime})
+        res.json({ accessToken: accessToken, expireTime: tokenExpireTime })
     })
 })
 

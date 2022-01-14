@@ -40,8 +40,8 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         console.log('verifying token')
-        if (err) return res.sendStatus(403)
-        req.username = user
+        if (err) return res.send(err)
+        req.username = user.user
         console.log('user success: ', user)
         next()
     })
