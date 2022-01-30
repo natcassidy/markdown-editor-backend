@@ -31,37 +31,37 @@ con.connect(err => {
 
 // Authentication
 
-// const authenticateToken = (req, res, next) => {
-//     const authHeader = req.headers["authorization"]
-//     const token = authHeader && authHeader.split(" ")[1]
-//     console.log('Authorizing in authtoken call, ', token)
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers["authorization"]
+    const token = authHeader && authHeader.split(" ")[1]
+    console.log('/authenticate Authorizing in authtoken call, ', token)
 
-//     if(token == null) return res.sendStatus(401)
+    if(token == null) return res.sendStatus(401)
 
-//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-//         console.log('verifying token')
-//         if (err) return res.sendStatus(403)
-//         req.username = user
-//         console.log('user success: ', user)
-//         next()
-//     })
-// }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        console.log('/authenticate verifying token')
+        if (err) return res.sendStatus(403)
+        req.username = user.user
+        console.log('/authenticate user success: ', user)
+        next()
+    })
+}
 
 app.post('/login', (req, res) => {
     const username = req.body.username
     const password = req.body.password
-    console.log('Username: ' + username + " password " + password)
+    console.log('/login Username: ' + username + " password " + password)
     let userFromDB
 
     con.query(`SELECT * FROM USER WHERE username = '${username}'`, (err, result) => {
         if (err) return res.sendStatus(500)
         if (res == null) return res.sendStatus(403)
         userFromDB = result[0]
-        console.log('user from db: ', userFromDB)
+        console.log('/login user from db: ', userFromDB)
 
         bcrypt.compare(password, userFromDB.password).then(result => {
-            console.log('results, ', result)
-            console.log('userfromdb, ', userFromDB)
+            console.log('/login results, ', result)
+            console.log('/login userfromdb, ', userFromDB)
 
             if(result == true) {
                 const tokenExpireTime = '15m'
@@ -75,7 +75,7 @@ app.post('/login', (req, res) => {
             }
     
         }).catch(err => {
-            console.log('error', err)
+            console.log('/login error', err)
         })
     })
 })
@@ -84,10 +84,10 @@ app.post('/refresh', (req, res) => {
     const token = req.body.token
     const tokenExpireTime = '15m'
     //not sure if user.username is valid here
-    console.log('refresh: ', token)
+    console.log('/refresh drefresh: ', token)
     jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
         if (err) return res.sendStatus(403)
-        console.log('user: ', user)
+        console.log('/refresh user: ', user)
         const accessToken = jwt.sign({user: user.user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: tokenExpireTime})
         res.json({ accessToken: accessToken, expireTime: tokenExpireTime })
     })
@@ -100,13 +100,26 @@ app.post('/create-user', (req, res) => {
     bcrypt.hash(password, 10, (err, hash) => {
         if (err) return res.status(500).send(err)
         con.query(`INSERT INTO user VALUES ('${username}', '${hash}')`, (err, result) => {
-            console.log('results from new user creation', result)
-            const accessToken = jwt.sign(result[0].username, process.env.ACCESS_TOKEN_SECRET)
+            console.log('/create-user results from new user creation', result)
+            const accessToken = jwt.sign({ user: username }, process.env.ACCESS_TOKEN_SECRET)
             // res.cookie('token', accessToken, {httpOnly: true})
             res.json({ accessToken: accessToken })
         })
     })
     //check if username already exists in db
+})
+
+app.put('/update-password', authenticateToken, (req, res) => {
+    console.log('/update-password user: ', req.username)
+    console.log('/update-password password: ', req.body.password)
+    const password = req.body.password
+
+    bcrypt.hash(password, 10, (err, hash) => {
+        con.query(`UPDATE user SET password = '${hash}' WHERE username = '${req.username}'`, (err, result) => {
+            if (err) res.sendStatus(500)
+            res.sendStatus(200)
+        })
+    })
 })
 
 // app.get('/login-try', authenticateToken, async (req, res) => {
