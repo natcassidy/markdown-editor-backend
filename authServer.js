@@ -101,9 +101,12 @@ app.post('/create-user', (req, res) => {
         if (err) return res.status(500).send(err)
         con.query(`INSERT INTO user VALUES ('${username}', '${hash}')`, (err, result) => {
             console.log('/create-user results from new user creation', result)
-            const accessToken = jwt.sign({ user: username }, process.env.ACCESS_TOKEN_SECRET)
+            const tokenExpireTime = '15m'
+            const accessToken = jwt.sign({ user: username }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: tokenExpireTime})
+            const refreshToken = jwt.sign({ user: username }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "4h"})
+            // const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
             // res.cookie('token', accessToken, {httpOnly: true})
-            res.json({ accessToken: accessToken })
+            res.json({ accessToken: accessToken, refreshToken: refreshToken, expireTime: tokenExpireTime})
         })
     })
     //check if username already exists in db
