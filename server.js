@@ -57,7 +57,7 @@ app.get('/editor', authenticateToken, (req, res) => {
 
 app.post('/new-document', authenticateToken, (req, res) => {
     console.log('New document')
-    con.query(`INSERT INTO document (user, title, content) VALUES ('${req.username}', '${req.body.title}', '${req.body.content}')`, (err, result) => {
+    con.query(`INSERT INTO document (username, title, content) VALUES ('${req.username}', '${req.body.title}', '${req.body.content}')`, (err, result) => {
         if (err) throw err
         console.log('record inserted')
         res.send(result)
@@ -66,7 +66,7 @@ app.post('/new-document', authenticateToken, (req, res) => {
 
 app.get('/documents', authenticateToken, (req, res) => {
     console.log('Quering documents, this is user: ', req.username)
-    con.query(`SELECT * FROM document WHERE user = '${req.username}' ORDER BY ModificationDate DESC`, (err, result, fields) => {
+    con.query(`SELECT * FROM document WHERE username = '${req.username}' ORDER BY ModificationDate DESC`, (err, result, fields) => {
         console.log('result ', result)
         res.send(result)
     })
@@ -106,6 +106,20 @@ app.listen(3001, () => {
 
 app.get("/settings", authenticateToken, (req, res) => {
     con.query(`SELECT * FROM settings WHERE username = '${req.username}'`, (err, result) => {
+        if(err) res.send(err)
+        res.send(result)
+    })
+})
+
+app.put("/settings", authenticateToken, (req, res) => {
+    con.query(`UPDATE settings
+        SET xlargeSize = '${req.body.xlargeSize}',
+        largeSize = '${req.body.largeSize}',
+        medium = '${req.body.medium}',
+        blockquote = '${req.body.blockquote}',
+        bold = '${req.body.bold}',
+        italic = '${req.body.italic}'
+        WHERE username = '${req.username}'`, (err, result) => {
         if(err) res.send(err)
         res.send(result)
     })
