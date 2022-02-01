@@ -8,7 +8,6 @@ const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
 const cookieParser = require("cookie-parser")
 
-
 app.use(express.json());
 app.use(cors())
 app.use(express.urlencoded({ extended: true}))
@@ -28,8 +27,6 @@ con.connect(err => {
     console.log('Connected!')
 
 })
-
-// Authentication
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers["authorization"]
@@ -55,9 +52,8 @@ app.post('/login', (req, res) => {
 
     con.query(`SELECT * FROM USER WHERE username = '${username}'`, (err, result) => {
         if (err) return res.sendStatus(500)
-        if (res == null) return res.sendStatus(403)
+        if (result[0] == undefined) return res.sendStatus(403)
         userFromDB = result[0]
-        console.log('/login user from db: ', userFromDB)
 
         bcrypt.compare(password, userFromDB.password).then(result => {
             console.log('/login results, ', result)
@@ -107,7 +103,6 @@ app.post('/create-user', (req, res) => {
             // const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
             // res.cookie('token', accessToken, {httpOnly: true})
             
-
             //create user settings in db
             con.query(`INSERT INTO settings VALUES ('###', '##', '#', '>', '\\*\\*', '\\*', '${username}')`, (err) => {
                 console.log('error inserting into settings: ', err)
@@ -116,7 +111,6 @@ app.post('/create-user', (req, res) => {
             res.json({ accessToken: accessToken, refreshToken: refreshToken, expireTime: tokenExpireTime})
         })
     })
-    //check if username already exists in db
 })
 
 app.put('/update-password', authenticateToken, (req, res) => {
@@ -131,10 +125,6 @@ app.put('/update-password', authenticateToken, (req, res) => {
         })
     })
 })
-
-// app.get('/login-try', authenticateToken, async (req, res) => {
-//     res.status(200).send("Successfuly done!")
-// })
 
 app.listen(4000, () => {
     console.log('listening on port 4000')

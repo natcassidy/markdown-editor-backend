@@ -47,10 +47,6 @@ const authenticateToken = (req, res, next) => {
     })
 }
 
-app.get('/', (req, res) => {
-    res.render('index')
-})
-
 app.get('/editor', authenticateToken, (req, res) => {
     res.render('editor')
 })
@@ -64,63 +60,62 @@ app.post('/new-document', authenticateToken, (req, res) => {
     })
 })
 
-app.get('/documents', authenticateToken, (req, res) => {
-    console.log('Quering documents, this is user: ', req.username)
-    con.query(`SELECT * FROM document WHERE username = '${req.username}' ORDER BY ModificationDate DESC`, (err, result, fields) => {
-        console.log('result ', result)
-        res.send(result)
+app.route('/documents')
+    .get(authenticateToken, (req, res) => {
+        console.log('Quering documents, this is user: ', req.username)
+        con.query(`SELECT * FROM document WHERE username = '${req.username}' ORDER BY ModificationDate DESC`, (err, result, fields) => {
+            console.log('result ', result)
+            res.send(result)
+        })
     })
-})
-
-app.put('/documents', authenticateToken, (req, res) => {
-    con.query(`UPDATE document SET title = '${req.body.title}', content = '${req.body.content}' WHERE documentID = '${req.body.id}'`, (err, result) => {
-        if (err) throw err;
-        console.log(result.affectedRows + " record(s) updated");
-        console.log('here is the result: ', result)
-        res.send(result)
+    .put(authenticateToken, (req, res) => {
+        con.query(`UPDATE document SET title = '${req.body.title}', content = '${req.body.content}' WHERE documentID = '${req.body.id}'`, (err, result) => {
+            if (err) throw err;
+            console.log(result.affectedRows + " record(s) updated");
+            console.log('here is the result: ', result)
+            res.send(result)
+        })
     })
 
-    console.log('inside put')
-})
-
-app.get('/documents/:id', authenticateToken, (req, res) => {
-    console.log('inside doc get for id', req.params.id)
-    con.query(`SELECT * FROM document WHERE documentID = '${req.params.id}'`, (err, result, fields) => {
-        console.log('result ', result)
-        res.send(result)
+app.route('/documents/:id')
+    .get(authenticateToken, (req, res) => {
+        console.log('inside doc get for id', req.params.id)
+        con.query(`SELECT * FROM document WHERE documentID = '${req.params.id}'`, (err, result, fields) => {
+            console.log('result ', result)
+            res.send(result)
+        })
     })
-})
-
-app.delete('/documents/:id', authenticateToken, (req, res) => {
-    console.log('inside doc get for delete', req.params.id)
-    con.query(`DELETE FROM document WHERE documentID = '${req.params.id}'`, (err, result) => {
-        if (err) throw err
-        console.log("Number of records deleted: " + result.affectedRows)
-        res.send(result)
+    .delete(authenticateToken, (req, res) => {
+        console.log('inside doc get for delete', req.params.id)
+        con.query(`DELETE FROM document WHERE documentID = '${req.params.id}'`, (err, result) => {
+            if (err) throw err
+            console.log("Number of records deleted: " + result.affectedRows)
+            res.send(result)
+        })
     })
-})
+
+
+app.route("/settings")
+    .get(authenticateToken, (req, res) => {
+        con.query(`SELECT * FROM settings WHERE username = '${req.username}'`, (err, result) => {
+            if(err) res.send(err)
+            res.send(result)
+        })
+    })
+    .put(authenticateToken, (req, res) => {
+        con.query(`UPDATE settings
+            SET xlargeSize = '${req.body.xlargeSize}',
+            largeSize = '${req.body.largeSize}',
+            medium = '${req.body.medium}',
+            blockquote = '${req.body.blockquote}',
+            bold = '${req.body.bold}',
+            italic = '${req.body.italic}'
+            WHERE username = '${req.username}'`, (err, result) => {
+            if(err) res.send(err)
+            res.send(result)
+        })
+    })
 
 app.listen(3001, () => {
     console.log('listening on port 3001')
-})
-
-app.get("/settings", authenticateToken, (req, res) => {
-    con.query(`SELECT * FROM settings WHERE username = '${req.username}'`, (err, result) => {
-        if(err) res.send(err)
-        res.send(result)
-    })
-})
-
-app.put("/settings", authenticateToken, (req, res) => {
-    con.query(`UPDATE settings
-        SET xlargeSize = '${req.body.xlargeSize}',
-        largeSize = '${req.body.largeSize}',
-        medium = '${req.body.medium}',
-        blockquote = '${req.body.blockquote}',
-        bold = '${req.body.bold}',
-        italic = '${req.body.italic}'
-        WHERE username = '${req.username}'`, (err, result) => {
-        if(err) res.send(err)
-        res.send(result)
-    })
 })
