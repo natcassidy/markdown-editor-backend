@@ -106,6 +106,13 @@ app.post('/create-user', (req, res) => {
             const refreshToken = jwt.sign({ user: username }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "4h"})
             // const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
             // res.cookie('token', accessToken, {httpOnly: true})
+            
+
+            //create user settings in db
+            con.query(`INSERT INTO settings VALUES ('###', '##', '#', '>', '\\*\\*', '\\*', '${username}')`, (err) => {
+                console.log('error inserting into settings: ', err)
+            })
+
             res.json({ accessToken: accessToken, refreshToken: refreshToken, expireTime: tokenExpireTime})
         })
     })

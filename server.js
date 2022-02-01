@@ -103,3 +103,10 @@ app.delete('/documents/:id', authenticateToken, (req, res) => {
 app.listen(3001, () => {
     console.log('listening on port 3001')
 })
+
+app.get("/settings", authenticateToken, (req, res) => {
+    con.query(`SELECT * FROM settings WHERE username = '${req.username}'`, (err, result) => {
+        if(err) res.send(err)
+        res.send(result)
+    })
+})
