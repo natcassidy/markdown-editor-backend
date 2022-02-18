@@ -46,6 +46,10 @@ const authenticateToken = (req, res, next) => {
     })
 }
 
+app.get('/test2', (req, res) => {
+    res.send("Yes")
+})
+
 app.get('/test', (req, res) => {
     con.query('SELECT * from user_info', (err, res) => {
         if (err) res.send(err)
