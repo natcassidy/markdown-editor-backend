@@ -8,9 +8,7 @@ const path = require('path')
 const jwt = require("jsonwebtoken")
 const cookieParser = require("cookie-parser")
 const { Client } = require('pg');
-
-
-  
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors())
@@ -124,6 +122,6 @@ app.route("/settings")
         })
     })
 
-app.listen(3001, () => {
+app.listen(PORT, () => {
     console.log('listening on port 3001')
 })
