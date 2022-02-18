@@ -51,9 +51,9 @@ app.get('/test2', (req, res) => {
 })
 
 app.get('/test', (req, res) => {
-    con.query('SELECT * from user_info', (err, res) => {
+    con.query('SELECT * from user_info', (err, result) => {
         if (err) res.send(err)
-        res.send(res.rows[0])
+        res.send(result.rows[0])
     })
 })
 
