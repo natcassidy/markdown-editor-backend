@@ -7,6 +7,10 @@ const cors = require('cors')
 const path = require('path')
 const jwt = require("jsonwebtoken")
 const cookieParser = require("cookie-parser")
+const { Client } = require('pg');
+
+
+  
 
 app.use(express.json());
 app.use(cors())
@@ -17,18 +21,15 @@ app.use(cookieParser())
 app.set('view engine', 'ejs')
 app.set('views', 'frontend')
 
-const con = mysql.createConnection({
-    host: "localhost",
-    user: "nodejs",
-    password: "Apps1234",
-    database: "markdown"
-})
+const con = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  });
+  
+con.connect();
 
-con.connect(err => {
-    if (err) throw err
-    console.log('Connected!')
-
-})
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers["authorization"]
@@ -46,6 +47,13 @@ const authenticateToken = (req, res, next) => {
         next()
     })
 }
+
+app.get('/test', (req, res) => {
+    con.query('SELECT * from user_info', (err, res) => {
+        if (err) res.send(err)
+        res.send(res.rows[0])
+    })
+})
 
 app.get('/editor', authenticateToken, (req, res) => {
     res.render('editor')
