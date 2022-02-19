@@ -75,7 +75,7 @@ app.route('/documents')
         console.log('Quering documents, this is user: ', req.username)
         con.query(`SELECT * FROM document WHERE username = '${req.username}' ORDER BY ModificationDate DESC`, (err, result, fields) => {
             console.log('result ', result)
-            res.send(result)
+            res.send(result.rows)
         })
     })
     .put(authenticateToken, (req, res) => {
@@ -92,14 +92,14 @@ app.route('/documents/:id')
         console.log('inside doc get for id', req.params.id)
         con.query(`SELECT * FROM document WHERE documentID = '${req.params.id}'`, (err, result, fields) => {
             console.log('result ', result)
-            res.send(result)
+            res.send(result.rows[0])
         })
     })
     .delete(authenticateToken, (req, res) => {
         console.log('inside doc get for delete', req.params.id)
         con.query(`DELETE FROM document WHERE documentID = '${req.params.id}'`, (err, result) => {
             if (err) throw err
-            console.log("Number of records deleted: " + result.affectedRows)
+            console.log("Number of records deleted: " + result)
             res.send(result)
         })
     })
@@ -109,7 +109,7 @@ app.route("/settings")
     .get(authenticateToken, (req, res) => {
         con.query(`SELECT * FROM settings WHERE username = '${req.username}'`, (err, result) => {
             if(err) res.send(err)
-            res.send(result)
+            res.send(result.rows[0])
         })
     })
     .put(authenticateToken, (req, res) => {
@@ -127,5 +127,5 @@ app.route("/settings")
     })
 
 app.listen(PORT, () => {
-    console.log('listening on port 3001')
+    console.log(`Listening on port ${PORT}`)
 })
