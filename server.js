@@ -46,21 +46,6 @@ const authenticateToken = (req, res, next) => {
     })
 }
 
-app.get('/test2', (req, res) => {
-    res.send("Yes")
-})
-
-app.get('/test', (req, res) => {
-    con.query('SELECT * from user_info', (err, result) => {
-        if (err) res.send(err)
-        res.send(result.rows[0])
-    })
-})
-
-app.get('/editor', authenticateToken, (req, res) => {
-    res.render('editor')
-})
-
 app.post('/new-document', authenticateToken, (req, res) => {
     console.log('New document')
     con.query(`INSERT INTO document (username, title, content) VALUES ('${req.username}', '${req.body.title}', '${req.body.content}')`, (err, result) => {
@@ -109,6 +94,8 @@ app.route("/settings")
     .get(authenticateToken, (req, res) => {
         con.query(`SELECT * FROM settings WHERE username = '${req.username}'`, (err, result) => {
             if(err) res.send(err)
+            console.log('Result from /settings call: ', result)
+            console.log('Result from /settings call with rows: ', result.rows[0])
             res.send(result.rows[0])
         })
     })
