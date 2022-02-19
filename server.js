@@ -48,7 +48,7 @@ const authenticateToken = (req, res, next) => {
 
 app.post('/new-document', authenticateToken, (req, res) => {
     console.log('New document')
-    con.query(`INSERT INTO document (username, title, content) VALUES ('${req.username}', '${req.body.title}', '${req.body.content}' RETURNING *)`, (err, result) => {
+    con.query(`INSERT INTO document (username, title, content) VALUES ('${req.username}', '${req.body.title}', '${req.body.content}') RETURNING *`, (err, result) => {
         if (err) throw err
         console.log('record inserted\n\n')
         console.log('result from insertion: ', result)
