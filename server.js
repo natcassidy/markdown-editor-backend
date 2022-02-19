@@ -48,7 +48,7 @@ const authenticateToken = (req, res, next) => {
 
 app.post('/new-document', authenticateToken, (req, res) => {
     console.log('New document')
-    con.query(`INSERT INTO document (username, title, content) VALUES ('${req.username}', '${req.body.title}', '${req.body.content}')`, (err, result) => {
+    con.query(`INSERT INTO document (username, title, content) VALUES ('${req.username}', '${req.body.title}', '${req.body.content}' RETURNING *)`, (err, result) => {
         if (err) throw err
         console.log('record inserted\n\n')
         console.log('result from insertion: ', result)
@@ -95,8 +95,6 @@ app.route("/settings")
     .get(authenticateToken, (req, res) => {
         con.query(`SELECT * FROM settings WHERE username = '${req.username}'`, (err, result) => {
             if(err) res.send(err)
-            console.log('Result from /settings call: ', result)
-            console.log('Result from /settings call with rows: ', result.rows[0])
             res.send(result.rows[0])
         })
     })
@@ -108,7 +106,8 @@ app.route("/settings")
             blockquote = '${req.body.blockquote}',
             bold = '${req.body.bold}',
             italic = '${req.body.italic}'
-            WHERE username = '${req.username}'`, (err, result) => {
+            WHERE username = '${req.username}'
+            RETURNING *`, (err, result) => {
             if(err) res.send(err)
             res.send(result)
         })
